@@ -1,0 +1,49 @@
+name: Ruby
+
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.2"
+          bundler-cache: true
+          rubygems: latest
+
+      - name: Lint code for consistent style
+        run: bin/rubocop --parallel
+
+  test:
+    runs-on: ubuntu-latest
+    name: Ruby ${{ matrix.ruby-version }}
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby-version: [3.2, 3.3]
+    steps:
+      - name: Install packages
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y libjemalloc2
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby-version }}
+          bundler-cache: true
+          rubygems: latest
+
+      - name: Run tests
+        run: bin/rake test
